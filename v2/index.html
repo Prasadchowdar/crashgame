@@ -1,0 +1,164 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,viewport-fit=cover,user-scalable=no">
+<meta name="theme-color" content="#05030f">
+<title>OUTLIER — Fewest wins</title>
+<meta name="description" content="OUTLIER: pick a door. The door with the fewest people wins. Playable prototype with demo credits.">
+<meta property="og:title" content="OUTLIER — Be the few. Take the pool.">
+<meta property="og:description" content="Three doors. One crowd. The emptiest door wins.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%2305030f'/%3E%3Cpath d='M6 26V14a4 4 0 0 1 8 0v12zM12 26V10a4 4 0 0 1 8 0v16zM18 26V14a4 4 0 0 1 8 0v12z' fill='none' stroke='%23ff2e63' stroke-width='2'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="fonts.css">
+<link rel="stylesheet" href="kit.css">
+<link rel="stylesheet" href="game.css">
+</head>
+<body>
+<canvas id="bg"></canvas>
+
+<div id="app">
+  <header class="top">
+    <div class="logo" aria-label="Outlier"><span class="lg-mark"><i style="--c:#ff2e63"></i><i style="--c:#ffc53d"></i><i style="--c:#2ea8ff"></i></span><b>OUTLIER</b></div>
+    <div class="wallet" id="wallet" aria-label="Demo credits"><i class="coin"></i><b id="bal">1000.00</b><span class="demo">DEMO</span></div>
+    <button id="btnSound" class="ibtn" aria-label="Toggle sound"><svg viewBox="0 0 24 24" width="20" height="20"><path d="M4 9v6h4l5 4V5L8 9H4z" fill="currentColor"/><g id="svgSndOn" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M16 9a4 4 0 0 1 0 6"/><path d="M18.5 6.5a8 8 0 0 1 0 11"/></g><g id="svgSndOff" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" style="display:none"><path d="M16 9l5 6M21 9l-5 6"/></g></svg></button>
+    <button id="btnHelp" class="ibtn" aria-label="How to play"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M9.5 9.5a2.6 2.6 0 1 1 3.6 2.4c-.8.4-1.1.9-1.1 1.7M12 17v.1"/></svg></button>
+  </header>
+
+  <div class="strip">
+    <div class="hist" id="hist" aria-label="Last results"></div>
+    <button class="fair" id="btnFair" aria-label="Provably fair: verify this round"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"/><path d="M8.5 12l2.5 2.5L16 9.5"/></svg><span>FAIR</span></button>
+  </div>
+  <div class="pickstat" id="pickStat" aria-live="polite"></div>
+
+  <div class="rule" id="rule" aria-label="Rule: the door with the fewest people wins">
+    <span class="rd many" aria-hidden="true"></span><span class="rx" aria-hidden="true"></span>
+    <span class="rd few" aria-hidden="true"></span><span class="rk" aria-hidden="true"></span>
+    <b>FEWEST WINS</b>
+  </div>
+
+  <section class="stage" id="stage">
+    <div class="doors" id="doors"></div>
+    <div class="crown" id="crown" aria-hidden="true"></div>
+    <div class="eyes" id="eyes" aria-hidden="true"><b>CROWD'S PICK</b><svg viewBox="0 0 34 16"><ellipse cx="8" cy="8" rx="7.2" ry="6.6" fill="#fff"/><ellipse cx="26" cy="8" rx="7.2" ry="6.6" fill="#fff"/><circle class="pu" cx="9.5" cy="9" r="3.4" fill="#1a0f3a"/><circle class="pu" cx="27.5" cy="9" r="3.4" fill="#1a0f3a"/></svg></div>
+    <div class="hand" id="hand" aria-hidden="true"></div>
+    <div class="stamp" id="stamp"></div>
+    <div class="flash" id="flash"></div>
+  </section>
+
+  <div class="hud" id="hud">
+    <div class="status" id="status"><span id="stTxt">GET READY</span></div>
+    <div class="fuse" id="fuse">
+      <div class="track">
+        <div class="danger" id="fDanger"></div>
+        <div class="fill" id="fFill"></div>
+        <i class="head" id="fHead"></i>
+        <i class="lockmark" id="fLock"></i>
+      </div>
+      <b class="ftime" id="fTime">0.0</b>
+    </div>
+    <div class="result" id="result" aria-live="polite"></div>
+  </div>
+
+  <div class="bet">
+    <div class="chips" id="chips" role="radiogroup" aria-label="Bet amount"></div>
+    <button class="playbtn" id="btnPlay" disabled>PICK A DOOR</button>
+    <p class="disc">Simulated crowd. The final rush decides the winner. Every door has the same 1-in-3 chance.</p>
+  </div>
+</div>
+
+<canvas id="fx"></canvas>
+
+<!-- Picture-first intro: 3 animated scenes, almost no words -->
+<div class="intro" id="intro" role="dialog" aria-modal="true" aria-label="How OUTLIER works">
+  <div class="in-wrap">
+    <div class="in-scene" id="inScene"></div>
+    <h2 class="in-cap" id="inCap">&nbsp;</h2>
+    <div class="in-dots" id="inDots"><i></i><i></i><i></i></div>
+    <button class="in-play" id="inPlay">PLAY</button>
+    <div class="in-links"><button id="inReplay">↻ Watch again</button><button id="inRules">Full rules</button></div>
+  </div>
+</div>
+
+<!-- Modals (for the curious; nobody has to read these to play) -->
+<div class="modal" id="mHow" role="dialog" aria-modal="true" aria-labelledby="howT">
+  <div class="sheet glass">
+    <button class="x" data-close aria-label="Close">×</button>
+    <h2 id="howT">FULL RULES</h2>
+    <p class="tag">Be the few. Take the pool.</p>
+    <ol class="steps">
+      <li><b>1</b><div><h4>Pick a chip and a door</h4><p>$0.10 to $5. <span class="c r">Red</span>, <span class="c g">Gold</span> or <span class="c b">Blue</span>. Then tap PLAY.</p></div></li>
+      <li><b>2</b><div><h4>Watch and switch</h4><p>The crowd floods in. Tap another door to switch, once per second. The eyes mark the crowd's pick: the door everyone is looking at.</p></div></li>
+      <li><b>3</b><div><h4>The final rush</h4><p>At a hidden moment between 10 and 20 seconds (the striped part of the bar) bets close, the crowd makes one last rush and the doors slam.</p></div></li>
+      <li><b>4</b><div><h4>Fewest people wins</h4><p>The door with the <em>fewest people</em> wins. The emptier it is, the bigger the win. Your payout includes your stake.</p></div></li>
+    </ol>
+    <table class="tbl" id="howTbl"></table>
+    <ul class="rules">
+      <li>Every door wins exactly 1 time in 3, whatever you pick or switch to. The crowd before the lock is for show; the final rush decides.</li>
+      <li>No ties: the winning door always has strictly the fewest people.</li>
+      <li>Max payout is <b>$100</b> per round ($5 × 20).</li>
+      <li>The result is sealed by a hash before you tap PLAY. Tap <b>FAIR</b> to check any round.</li>
+      <li>Demo mode: 50 demo coins, no real money.</li>
+    </ul>
+    <div class="row-btns"><button class="ghost" id="linkMath">Math &amp; RTP</button><button class="ghost" id="linkVerify">Verify last round</button></div>
+    <button class="cta" data-close>GOT IT</button>
+  </div>
+</div>
+
+<div class="modal" id="mMath" role="dialog" aria-modal="true" aria-labelledby="mathT">
+  <div class="sheet glass">
+    <button class="x" data-close aria-label="Close">×</button>
+    <h2 id="mathT">MATH &amp; RTP</h2>
+    <div class="rtp-big"><b id="rtpBig">94.00%</b><span>exact RTP · every one of the 3,000 possible results</span></div>
+    <div class="rtp-doors" id="rtpDoors"></div>
+    <table class="tbl" id="tierTbl"></table>
+    <ul class="rules">
+      <li>Each round draws one number from 0 to 2,999. 0–999 is Red, 1,000–1,999 Gold, 2,000–2,999 Blue. Inside each door, the payout level is picked by weight.</li>
+      <li>Average win = (5×20 + 25×10 + 90×5 + 260×3 + 620×2) / 1000 = 2.82×. Your door wins 1 time in 3, so RTP = 2.82 / 3 = <b>94.00%</b>.</li>
+      <li>The result does not depend on your door, stake, switches or timing, so every way of playing returns 94%.</li>
+      <li>Max payout per round: <b>$100</b> ($5 chip × 20×). Crowd size 1,000; you are not counted.</li>
+    </ul>
+    <div class="mc-run"><button class="ghost" id="btnMc">Check all 3,000 results + 2,000 rounds here</button><span id="mcOut"></span></div>
+    <button class="cta" data-close>CLOSE</button>
+  </div>
+</div>
+
+<div class="modal" id="mVerify" role="dialog" aria-modal="true" aria-labelledby="verT">
+  <div class="sheet glass">
+    <button class="x" data-close aria-label="Close">×</button>
+    <h2 id="verT">PROVABLY FAIR</h2>
+    <p class="tag">Before you tap PLAY, the Keccak-256 hash of the round's secret seed is shown. After the round, the seed is revealed and anyone can replay the result.</p>
+    <div class="kv" id="verKv"></div>
+    <div class="verdict" id="verVerdict"></div>
+    <div class="row-btns"><button class="ghost" id="btnReverify">Recompute hash</button><button class="ghost" id="btnCopyHash">Copy hash</button></div>
+    <button class="cta" data-close>CLOSE</button>
+  </div>
+</div>
+
+<div class="modal" id="mShare" role="dialog" aria-modal="true" aria-labelledby="shT">
+  <div class="sheet glass">
+    <button class="x" data-close aria-label="Close">×</button>
+    <h2 id="shT">SHARE RESULT</h2>
+    <canvas id="shareCanvas" width="1080" height="1350"></canvas>
+    <div class="row-btns"><button class="cta" id="btnShareNow">SHARE</button><button class="ghost" id="btnDl">Download PNG</button><button class="ghost" id="btnCopyTxt">Copy text</button></div>
+  </div>
+</div>
+
+<div class="splash" id="splash">
+  <div class="sp-grid"></div>
+  <div class="sp-arches"><i style="--c:#ff2e63"></i><i style="--c:#ffc53d"></i><i style="--c:#2ea8ff"></i></div>
+  <div class="sp-center">
+    <div class="sp-kicker">A NEW KIND OF CROWD GAME</div>
+    <h1 class="sp-logo" aria-label="OUTLIER"><span>O</span><span>U</span><span>T</span><span>L</span><span>I</span><span>E</span><span>R</span></h1>
+    <p class="sp-tag">BE THE FEW. TAKE THE POOL.</p>
+    <button class="sp-btn" id="btnEnter"><span>PLAY</span></button>
+    <p class="sp-fine">Demo · 50 demo coins · no real money</p>
+  </div>
+  <i class="sp-door l"></i><i class="sp-door r"></i>
+</div>
+
+<div class="toast" id="toast"></div>
+<script src="https://cdn.jsdelivr.net/npm/js-sha3@0.9.3/build/sha3.min.js"></script>
+<script src="engine.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

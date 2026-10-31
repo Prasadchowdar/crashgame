@@ -1,0 +1,167 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,viewport-fit=cover,user-scalable=no">
+<meta name="theme-color" content="#05030f">
+<title>OUTLIER — Be the few. Take the pool. (Prototype)</title>
+<meta name="description" content="OUTLIER: House Mode — playable prototype. Demo credits only, no real money.">
+<meta property="og:title" content="OUTLIER — Be the few. Take the pool.">
+<meta property="og:description" content="Three doors. One crowd. The smallest door wins. Playable prototype with demo credits.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%2305030f'/%3E%3Cpath d='M6 26V14a4 4 0 0 1 8 0v12zM12 26V10a4 4 0 0 1 8 0v16zM18 26V14a4 4 0 0 1 8 0v12z' fill='none' stroke='%23ff2e63' stroke-width='2'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<canvas id="bg"></canvas>
+<div class="shafts" aria-hidden="true"><i></i><i></i><i></i></div>
+
+<div id="app">
+  <header class="top">
+    <div class="logo" aria-label="Outlier"><span class="lg-mark"><i style="--c:#ff2e63"></i><i style="--c:#ffc53d"></i><i style="--c:#2ea8ff"></i></span><b>OUTLIER</b><em>HOUSE MODE</em></div>
+    <div class="wallet glass"><span class="lbl">DEMO CREDITS</span><b id="bal">1000.00</b></div>
+    <div class="icons">
+      <button id="btnSound" class="ibtn" aria-label="Toggle sound" title="Sound"><svg viewBox="0 0 24 24" width="20" height="20"><path id="svgSnd" d="M4 9v6h4l5 4V5L8 9H4z" fill="currentColor"/><g id="svgSndOn" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M16 9a4 4 0 0 1 0 6"/><path d="M18.5 6.5a8 8 0 0 1 0 11"/></g><g id="svgSndOff" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" style="display:none"><path d="M16 9l5 6M21 9l-5 6"/></g></svg></button>
+      <button id="btnHelp" class="ibtn" aria-label="How to play" title="How to play"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M9.5 9.5a2.6 2.6 0 1 1 3.6 2.4c-.8.4-1.1.9-1.1 1.7M12 17v.1"/></svg></button>
+    </div>
+  </header>
+  <div class="ribbon"><span class="dot"></span>PROTOTYPE · DEMO CREDITS · NO REAL MONEY</div>
+
+  <main class="layout">
+    <section class="stage-col">
+      <div class="roundbar">
+        <div class="rb-left"><span class="rno" id="rno">ROUND #1</span><span class="phase" id="phase">STARTING</span></div>
+        <button class="commit" id="btnCommit" title="Verify commitment"><span class="k">COMMIT</span><code id="hashShort">––––…––––</code><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"/><path d="M8.5 12l2.5 2.5L16 9.5"/></svg></button>
+      </div>
+
+      <div class="stage" id="stage">
+        <div class="stage-bg"></div>
+        <div class="doors" id="doors"></div>
+        <div class="banner" id="banner"></div>
+        <div class="result" id="result" aria-live="polite"></div>
+        <div class="cine ct"></div><div class="cine cb"></div>
+        <div class="flash" id="flash"></div>
+      </div>
+
+      <div class="meter glass" id="meter">
+        <div class="m-top"><span id="mLabel">Hidden lock between 10s and 20s</span><b id="mTime">0.0s</b></div>
+        <div class="track"><div class="zone"></div><div class="fill" id="mFill"></div><i class="tick" style="left:50%"><s>10s</s></i><i class="heart" id="mHeart"></i></div>
+      </div>
+
+      <div class="ladder" id="ladder"></div>
+    </section>
+
+    <aside class="side">
+      <section class="panel glass bet" id="betPanel">
+        <div class="pick-row">
+          <div class="pick-sum" id="pickSum"><span class="pip none"></span><span>Tap a door to enter</span></div>
+          <div class="cdbar" id="cdbar"><i></i></div>
+        </div>
+        <div class="stake-row">
+          <button class="step" id="stakeMinus" aria-label="Decrease stake">−</button>
+          <div class="stake-val"><span class="lbl">STAKE</span><b id="stakeVal">1.00</b></div>
+          <button class="step" id="stakePlus" aria-label="Increase stake">+</button>
+        </div>
+        <div class="chips" id="chips"></div>
+        <div class="bet-foot"><span id="potential">Max payout <b>125</b> credits / round</span></div>
+      </section>
+
+      <section class="panel glass feed-panel">
+        <div class="p-title"><span class="live"></span>LIVE CROWD <em>simulated · 1,000 players</em></div>
+        <div class="feed" id="feed"></div>
+      </section>
+
+      <section class="panel glass hist-panel">
+        <div class="p-title">HISTORY <em>tap a round to verify</em></div>
+        <div class="hist" id="hist"></div>
+      </section>
+
+      <nav class="links">
+        <button id="linkHow">How to play</button><button id="linkMath">Math &amp; RTP</button><button id="linkVerify">Verify</button>
+      </nav>
+    </aside>
+  </main>
+</div>
+
+<canvas id="fx"></canvas>
+
+<!-- Modals -->
+<div class="modal" id="mHow" role="dialog" aria-modal="true" aria-labelledby="howT">
+  <div class="sheet glass">
+    <button class="x" data-close aria-label="Close">×</button>
+    <h2 id="howT">HOW TO PLAY</h2>
+    <p class="tag">Be the few. Take the pool.</p>
+    <ol class="steps">
+      <li><b>1</b><div><h4>Pick a stake</h4><p>0.10 to 5.00 demo credits. Change it any time before picks close.</p></div></li>
+      <li><b>2</b><div><h4>Tap a door</h4><p><span class="c r">Red</span>, <span class="c g">Gold</span> or <span class="c b">Blue</span>. A crowd of about 1,000 players floods in live. You can switch doors every 1 second.</p></div></li>
+      <li><b>3</b><div><h4>The lock drops</h4><p>At a hidden moment between 10s and 20s the doors slam shut. Picks close a split second earlier, while the crowd makes its final swing.</p></div></li>
+      <li><b>4</b><div><h4>Smallest door wins</h4><p>The door with the <em>fewest players</em> bursts open and pays everyone inside. The smaller the door, the bigger the multiplier.</p></div></li>
+    </ol>
+    <div class="how-ladder" id="howLadder"></div>
+    <ul class="rules">
+      <li>Tie between the two smallest doors: payout is split in half.</li>
+      <li>All three doors exactly equal: your stake is refunded.</li>
+      <li>Max payout is capped at <b id="capTxt">100</b> credits per round.</li>
+      <li>House Mode: the crowd is simulated. Its final split is sealed (hashed) before the round, so nothing you do can change it. Tap <b>Verify</b> after a round to check.</li>
+      <li>Prototype with demo credits only. No real money.</li>
+    </ul>
+    <button class="cta" data-close>GOT IT</button>
+  </div>
+</div>
+
+<div class="modal" id="mMath" role="dialog" aria-modal="true" aria-labelledby="mathT">
+  <div class="sheet glass">
+    <button class="x" data-close aria-label="Close">×</button>
+    <h2 id="mathT">MATH &amp; RTP</h2>
+    <div class="rtp-big"><b id="rtpBig">97.0%</b><span>measured RTP · <span id="rtpRounds">30,000,000</span> simulated rounds</span></div>
+    <div class="rtp-doors" id="rtpDoors"></div>
+    <table class="tbl" id="tierTbl"></table>
+    <ul class="rules">
+      <li>The final split is drawn from the round seed, from a mix of balanced, lopsided and stampede crowds, and is symmetric across doors. So <b>RTP is the same whichever door you pick</b>.</li>
+      <li>Picks close 0.6s before the lock, while the crowd makes its final swing, so late-crowd reading can't beat the math.</li>
+      <li>Ties (two smallest doors equal): half payout each. Observed in <span id="tieRate">0.79%</span> of rounds. Three-way tie: refund.</li>
+      <li>Max payout per round: <b id="capTxt2">100</b> credits = 25× the max stake, so the cap never reduces any payout and the RTP holds at every stake.</li>
+      <li>Crowd size N = 1,000 (the player is not counted in it).</li>
+    </ul>
+    <div class="mc-run"><button class="ghost" id="btnMc">Re-run 300,000 rounds in this browser</button><span id="mcOut"></span></div>
+    <button class="cta" data-close>CLOSE</button>
+  </div>
+</div>
+
+<div class="modal" id="mVerify" role="dialog" aria-modal="true" aria-labelledby="verT">
+  <div class="sheet glass">
+    <button class="x" data-close aria-label="Close">×</button>
+    <h2 id="verT">PROVABLY FAIR</h2>
+    <p class="tag" id="verSub">Before each round a SHA-256 hash of <code>lockTime | seed | finalSplit</code> is published. After it, the seed is revealed.</p>
+    <div class="kv" id="verKv"></div>
+    <div class="verdict" id="verVerdict"></div>
+    <div class="row-btns"><button class="ghost" id="btnReverify">Recompute hash</button><button class="ghost" id="btnCopyHash">Copy hash</button></div>
+    <button class="cta" data-close>CLOSE</button>
+  </div>
+</div>
+
+<div class="modal" id="mShare" role="dialog" aria-modal="true" aria-labelledby="shT">
+  <div class="sheet glass">
+    <button class="x" data-close aria-label="Close">×</button>
+    <h2 id="shT">SHARE RESULT</h2>
+    <canvas id="shareCanvas" width="1080" height="1350"></canvas>
+    <div class="row-btns"><button class="cta" id="btnShareNow">SHARE</button><button class="ghost" id="btnDl">Download PNG</button><button class="ghost" id="btnCopyTxt">Copy text</button></div>
+  </div>
+</div>
+
+<div class="splash" id="splash">
+  <div class="sp-grid"></div>
+  <div class="sp-arches"><i style="--c:#ff2e63"></i><i style="--c:#ffc53d"></i><i style="--c:#2ea8ff"></i></div>
+  <div class="sp-center">
+    <div class="sp-kicker">A NEW KIND OF CROWD GAME</div>
+    <h1 class="sp-logo" aria-label="OUTLIER"><span>O</span><span>U</span><span>T</span><span>L</span><span>I</span><span>E</span><span>R</span></h1>
+    <p class="sp-tag">BE THE FEW. TAKE THE POOL.</p>
+    <button class="sp-btn" id="btnEnter"><span>TAP TO ENTER</span></button>
+    <p class="sp-fine">Prototype · House Mode · Demo credits only</p>
+  </div>
+  <i class="sp-door l"></i><i class="sp-door r"></i>
+</div>
+
+<div class="toast" id="toast"></div>
+<script src="app.js"></script>
+</body>
+</html>
